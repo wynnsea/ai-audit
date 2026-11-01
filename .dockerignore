@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+# .env.local berisi API_URL untuk development lokal; di Docker API_URL dikirim lewat build arg
+.env*
+*.log
+*.tsbuildinfo
+Dockerfile
+.dockerignore
