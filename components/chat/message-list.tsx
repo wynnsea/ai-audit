@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import type { ChatMessage, Source } from "@/lib/types";
 import { MessageBubble } from "./message-bubble";
 
@@ -10,10 +10,14 @@ type Props = {
 
 export function MessageList({ messages, pending, onOpenSource }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
+  // komponen ini dipasang ulang setiap membuka sesi, jadi false berarti percakapan baru dibuka
+  const opened = useRef(false);
 
-  // gulir ke pesan terbaru setiap ada pesan baru atau saat mulai menunggu jawaban
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  // gulir ke pesan terbaru setiap ada pesan baru atau saat mulai menunggu jawaban.
+  // Saat percakapan dibuka langsung lompat sebelum digambar, supaya tidak terlihat bergulir dari atas.
+  useLayoutEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: opened.current ? "smooth" : "auto", block: "end" });
+    opened.current = true;
   }, [messages.length, pending]);
 
   return (
@@ -28,10 +32,11 @@ export function MessageList({ messages, pending, onOpenSource }: Props) {
             <span className="size-1.5 animate-bounce rounded-full bg-ledger [animation-delay:-0.15s]" />
             <span className="size-1.5 animate-bounce rounded-full bg-ledger" />
           </span>
-          Mencari pasal yang relevan dan menyusun jawaban…
+          Menyusun jawaban…
         </div>
       )}
-      <div ref={endRef} />
+      {/* scroll-mb-6: sisakan jarak yang sama dengan padding bawah daftar pesan */}
+      <div ref={endRef} className="scroll-mb-6" />
     </div>
   );
 }

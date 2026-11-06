@@ -8,6 +8,7 @@ import type {
 // semua request lewat /api (rewrite di next.config.ts → Go service)
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, init);
+  // 204 (misal setelah hapus) tidak punya body, jadi hasil parse-nya null
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     // Go selalu mengirim error dalam bentuk {"error": "..."}
@@ -28,13 +29,26 @@ export const api = {
 
   listSessions: () => request<ChatSession[]>("/chat/sessions"),
 
+  renameSession: (sessionId: string, title: string) =>
+    request<{ id: string; title: string }>(`/chat/sessions/${sessionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    }),
+
+  deleteSession: (sessionId: string) =>
+    request<null>(`/chat/sessions/${sessionId}`, { method: "DELETE" }),
+
   listMessages: (sessionId: string) =>
     request<ChatMessage[]>(`/chat/sessions/${sessionId}/messages`),
 
-  ask: (question: string, sessionId?: string) =>
+  // urutan pertama = model default
+  listModels: () => request<string[]>("/chat/models"),
+
+  ask: (question: string, sessionId?: string, model?: string, documentIds?: string[]) =>
     request<AskResponse>("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, session_id: sessionId }),
+      body: JSON.stringify({ question, session_id: sessionId, model, document_ids: documentIds }),
     }),
 };

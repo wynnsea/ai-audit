@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { formatDateTime } from "@/lib/format";
 import type { ChatSession } from "@/lib/types";
 
@@ -5,51 +6,343 @@ type Props = {
   sessions: ChatSession[];
   activeId: string | null;
   disabled: boolean;
+  // di layar kecil sidebar berupa laci yang dibuka lewat tombol Riwayat
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
   onSelect: (id: string) => void;
   onNew: () => void;
+  // resolve true kalau berhasil; kalau gagal, pesan error ditampilkan oleh ChatView
+  onRename: (id: string, title: string) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
 };
 
-export function SessionSidebar({ sessions, activeId, disabled, onSelect, onNew }: Props) {
-  return (
-    <aside className="hidden w-72 shrink-0 flex-col border-r border-rule bg-surface md:flex">
-      <div className="p-4">
-        <button
-          type="button"
-          onClick={onNew}
-          disabled={disabled}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-ledger px-3 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
-        >
-          <span aria-hidden="true" className="text-base leading-none">+</span>
-          Chat baru
-        </button>
-      </div>
+export function SessionSidebar({
+  sessions,
+  activeId,
+  disabled,
+  mobileOpen,
+  onCloseMobile,
+  onSelect,
+  onNew,
+  onRename,
+  onDelete,
+}: Props) {
+  // hanya satu sesi yang boleh punya menu, mode rename, atau konfirmasi hapus dalam satu waktu
+  const [menuId, setMenuId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
-      <h2 className="px-5 pb-2 text-xs font-semibold text-muted">Riwayat</h2>
-      <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
-        {sessions.length === 0 && (
-          <p className="px-3 text-sm text-muted">Pertanyaan yang kamu kirim akan tersimpan di sini.</p>
-        )}
-        {sessions.map((s) => {
-          const active = s.id === activeId;
-          return (
-            <button
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      // Escape menutup menu dulu; laci baru tertutup kalau tidak ada menu yang terbuka
+      if (e.key === "Escape" && menuId === null && confirmId === null && renamingId === null) {
+        onCloseMobile();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen, onCloseMobile, menuId, confirmId, renamingId]);
+
+  return (
+    <>
+      {mobileOpen && (
+        <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={onCloseMobile} aria-hidden="true" />
+      )}
+
+      {/* md:mt-19: di layar besar mulai di bawah nav yang mengambang */}
+      <aside
+        className={`glass-thick fixed inset-y-3 left-3 z-40 w-[min(18rem,calc(100vw-1.5rem))] flex-col rounded-[28px] md:static md:z-auto md:mt-19 md:mb-4 md:ml-4 md:flex md:w-72 md:shrink-0 ${
+          mobileOpen ? "flex" : "hidden"
+        }`}
+      >
+        <div className="p-3">
+          <button
+            type="button"
+            onClick={onNew}
+            disabled={disabled}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-ledger px-3 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
+          >
+            <span aria-hidden="true" className="text-base leading-none">+</span>
+            Chat baru
+          </button>
+        </div>
+
+        <h2 className="px-5 pb-2 text-xs font-semibold text-muted">Riwayat</h2>
+        <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+          {sessions.length === 0 && (
+            <p className="px-3 text-sm text-muted">Pertanyaan yang kamu kirim akan tersimpan di sini.</p>
+          )}
+          {sessions.map((s) => (
+            <SessionItem
               key={s.id}
-              type="button"
-              onClick={() => onSelect(s.id)}
+              session={s}
+              active={s.id === activeId}
               disabled={disabled}
-              aria-current={active ? "true" : undefined}
-              className={`mb-0.5 w-full border-l-2 px-3 py-2 text-left transition-colors disabled:opacity-50 ${
-                active
-                  ? "border-ledger bg-ledger-soft"
-                  : "border-transparent hover:bg-paper"
-              }`}
-            >
-              <div className="truncate text-sm font-medium">{s.title || "Tanpa judul"}</div>
-              <div className="mt-0.5 text-xs text-muted">{formatDateTime(s.created_at)}</div>
-            </button>
-          );
-        })}
-      </nav>
-    </aside>
+              menuOpen={menuId === s.id}
+              renaming={renamingId === s.id}
+              confirming={confirmId === s.id}
+              onSelect={() => onSelect(s.id)}
+              onToggleMenu={() => {
+                setConfirmId(null);
+                setMenuId(menuId === s.id ? null : s.id);
+              }}
+              onCloseMenu={() => setMenuId(null)}
+              onStartRename={() => {
+                setMenuId(null);
+                setRenamingId(s.id);
+              }}
+              onEndRename={() => setRenamingId(null)}
+              onStartDelete={() => {
+                setMenuId(null);
+                setConfirmId(s.id);
+              }}
+              onCancelDelete={() => setConfirmId(null)}
+              onRename={(title) => onRename(s.id, title)}
+              onDelete={() => onDelete(s.id)}
+            />
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+type ItemProps = {
+  session: ChatSession;
+  active: boolean;
+  disabled: boolean;
+  menuOpen: boolean;
+  renaming: boolean;
+  confirming: boolean;
+  onSelect: () => void;
+  onToggleMenu: () => void;
+  onCloseMenu: () => void;
+  onStartRename: () => void;
+  onEndRename: () => void;
+  onStartDelete: () => void;
+  onCancelDelete: () => void;
+  onRename: (title: string) => Promise<boolean>;
+  onDelete: () => Promise<boolean>;
+};
+
+function SessionItem({
+  session,
+  active,
+  disabled,
+  menuOpen,
+  renaming,
+  confirming,
+  onSelect,
+  onToggleMenu,
+  onCloseMenu,
+  onStartRename,
+  onEndRename,
+  onStartDelete,
+  onCancelDelete,
+  onRename,
+  onDelete,
+}: ItemProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const [busy, setBusy] = useState(false);
+  const title = session.title || "Tanpa judul";
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) onCloseMenu();
+    };
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCloseMenu();
+        menuButton.current?.focus();
+      }
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen, onCloseMenu]);
+
+  if (renaming) {
+    return <RenameField initial={session.title} onSave={onRename} onDone={onEndRename} />;
+  }
+
+  if (confirming) {
+    return (
+      <div className="mb-0.5 rounded-2xl bg-danger-soft px-3 py-2.5" role="group" aria-label={`Hapus ${title}`}>
+        <p className="text-sm font-medium text-danger">Hapus chat ini?</p>
+        <p className="mt-0.5 truncate text-xs text-muted">{title}</p>
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            autoFocus
+            disabled={busy || disabled}
+            onClick={async () => {
+              setBusy(true);
+              const ok = await onDelete();
+              // kalau berhasil, item ini hilang dari daftar, jadi state tidak perlu dikembalikan
+              if (!ok) setBusy(false);
+            }}
+            className="rounded-full bg-danger px-3 py-1 text-xs font-semibold text-surface transition-opacity hover:opacity-85 disabled:opacity-50"
+          >
+            {busy ? "Menghapus…" : "Hapus"}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onCancelDelete}
+            onKeyDown={(e) => e.key === "Escape" && onCancelDelete()}
+            className="rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-surface disabled:opacity-50"
+          >
+            Batal
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={root}
+      className={`group relative mb-0.5 rounded-2xl transition-colors ${
+        active || menuOpen ? "bg-ledger-soft" : "hover:bg-ledger-soft"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onSelect}
+        disabled={disabled}
+        aria-current={active ? "true" : undefined}
+        className="w-full rounded-2xl py-2 pr-10 pl-3 text-left disabled:opacity-50"
+      >
+        <div className="truncate text-sm font-medium">{title}</div>
+        <div className="mt-0.5 text-xs text-muted">
+          {formatDateTime(session.last_message_at || session.created_at)}
+        </div>
+      </button>
+
+      {/* di layar sentuh tidak ada hover, jadi tombol menu selalu terlihat; di desktop muncul saat hover */}
+      <button
+        ref={menuButton}
+        type="button"
+        aria-label={`Opsi untuk ${title}`}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        disabled={disabled}
+        onClick={onToggleMenu}
+        className={`absolute top-1/2 right-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-full text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:opacity-100 disabled:opacity-0 md:opacity-0 md:group-hover:opacity-100 ${
+          menuOpen || active ? "md:opacity-100" : ""
+        }`}
+      >
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="size-4">
+          <circle cx="3" cy="8" r="1.4" />
+          <circle cx="8" cy="8" r="1.4" />
+          <circle cx="13" cy="8" r="1.4" />
+        </svg>
+      </button>
+
+      {menuOpen && (
+        <div
+          role="menu"
+          aria-label={`Opsi untuk ${title}`}
+          className="absolute top-full right-1 z-50 mt-1 w-36 rounded-[18px] border border-rule bg-surface p-1.5 shadow-xl"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            autoFocus
+            onClick={onStartRename}
+            className="w-full rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-ledger-soft focus-visible:bg-ledger-soft"
+          >
+            Ganti nama
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={onStartDelete}
+            className="w-full rounded-xl px-3 py-2 text-left text-sm text-danger transition-colors hover:bg-danger-soft focus-visible:bg-danger-soft"
+          >
+            Hapus
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RenameField({
+  initial,
+  onSave,
+  onDone,
+}: {
+  initial: string;
+  onSave: (title: string) => Promise<boolean>;
+  onDone: () => void;
+}) {
+  const [value, setValue] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  // Enter lalu blur bisa memanggil simpan dua kali; flag ini mencegahnya
+  const finished = useRef(false);
+
+  useEffect(() => {
+    input.current?.select();
+  }, []);
+
+  async function save() {
+    if (finished.current) return;
+    const title = value.trim();
+    // judul kosong atau tidak berubah dianggap batal
+    if (title === "" || title === initial) {
+      finished.current = true;
+      onDone();
+      return;
+    }
+    finished.current = true;
+    setSaving(true);
+    const ok = await onSave(title);
+    if (ok) {
+      onDone();
+    } else {
+      // gagal: tetap di mode rename supaya teksnya tidak hilang
+      finished.current = false;
+      setSaving(false);
+      input.current?.focus();
+    }
+  }
+
+  function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      save();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      finished.current = true;
+      onDone();
+    }
+  }
+
+  return (
+    <div className="mb-0.5 rounded-2xl bg-ledger-soft px-2 py-1.5">
+      <label className="sr-only" htmlFor="rename-session">
+        Nama chat
+      </label>
+      <input
+        id="rename-session"
+        ref={input}
+        value={value}
+        maxLength={60}
+        disabled={saving}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={onKeyDown}
+        onBlur={save}
+        className="w-full rounded-xl border border-rule bg-surface px-2 py-1.5 text-base outline-none focus:border-ledger disabled:opacity-60 md:text-sm"
+      />
+      <p className="mt-1 px-1 text-[11px] text-muted">Enter simpan · Esc batal</p>
+    </div>
   );
 }

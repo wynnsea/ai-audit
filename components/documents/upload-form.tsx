@@ -38,13 +38,13 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
 
   return (
     // form dengan action otomatis di-reset oleh React setelah action selesai
-    <form action={formAction} className="rounded-xl border border-rule bg-surface p-5">
+    <form action={formAction} className="glass rounded-[28px] p-5">
       {/* input file dibuat transparan menutupi area ini, jadi klik & drag-drop ditangani browser */}
       <label
         onDragEnter={() => setDragging(true)}
         onDragLeave={() => setDragging(false)}
         onDrop={() => setDragging(false)}
-        className={`relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors ${
+        className={`relative flex flex-col items-center justify-center rounded-[20px] border-2 border-dashed px-4 py-8 text-center transition-colors ${
           dragging ? "border-ledger bg-ledger-soft" : "border-rule hover:border-ledger"
         }`}
       >
@@ -77,8 +77,8 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
           <input
             type="text"
             name="title"
-            placeholder="UU 27/2022 Pelindungan Data Pribadi"
-            className="rounded-lg border border-rule bg-paper px-3 py-2 placeholder:text-muted focus:border-ledger focus:outline-none"
+            placeholder="Contoh: Kebijakan Keamanan Informasi 2026"
+            className="w-full min-w-0 rounded-full border border-rule bg-surface/60 px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none"
           />
         </label>
         <label className="grid gap-1.5 text-sm">
@@ -86,19 +86,18 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
           <input
             type="text"
             name="regulation_type"
-            placeholder="UU PDP, ISO 27001"
-            className="rounded-lg border border-rule bg-paper px-3 py-2 placeholder:text-muted focus:border-ledger focus:outline-none"
+            placeholder="Contoh: Regulasi, SOP, Standar"
+            className="w-full min-w-0 rounded-full border border-rule bg-surface/60 px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none"
           />
         </label>
         <button
           type="submit"
           disabled={pending}
-          className="h-10 rounded-lg bg-ledger px-5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
+          className="h-10 rounded-full bg-ledger px-5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
         >
           {pending ? "Mengupload…" : "Upload dokumen"}
         </button>
       </div>
-      <p className="mt-2 text-xs text-muted">Judul dan jenis boleh dikosongkan, judul akan diambil dari nama file.</p>
 
       {state.error && (
         <p role="alert" className="mt-3 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">

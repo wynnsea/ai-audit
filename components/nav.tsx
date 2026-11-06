@@ -13,16 +13,17 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-rule bg-surface">
-      <nav className="flex h-14 items-center gap-8 px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-md bg-ledger text-surface">
+    // mengambang di atas konten, jadi isi halaman perlu padding atas sendiri
+    <header className="absolute top-3 left-3 z-30 md:left-4">
+      <nav className="glass flex h-12 items-center gap-2 rounded-full pr-1.5 pl-2.5 md:gap-4">
+        <Link href="/" aria-label="AI Audit" className="flex items-center gap-2">
+          <span className="grid size-7 place-items-center rounded-full bg-ledger text-surface">
             <TickMark className="size-4" />
           </span>
-          <span className="font-serif text-lg font-semibold tracking-tight">AI Audit</span>
+          <span className="hidden font-serif text-lg font-semibold tracking-tight md:inline">AI Audit</span>
         </Link>
 
-        <div className="flex h-full gap-6">
+        <div className="flex gap-1">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
@@ -30,10 +31,8 @@ export function Nav() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center border-b-2 text-sm font-medium transition-colors ${
-                  active
-                    ? "border-ledger text-ink"
-                    : "border-transparent text-muted hover:text-ink"
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  active ? "bg-ledger-soft text-ink" : "text-muted hover:text-ink"
                 }`}
               >
                 {link.label}

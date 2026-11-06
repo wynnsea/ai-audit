@@ -24,16 +24,16 @@ function StatusBadge({ status }: { status: DocumentStatus }) {
 export function DocumentTable({ documents }: { documents: AuditDocument[] }) {
   if (documents.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-rule px-4 py-10 text-center text-sm text-muted">
-        Belum ada dokumen. Upload regulasi atau standar pertama di atas.
+      <p className="rounded-[28px] border border-dashed border-rule px-4 py-10 text-center text-sm text-muted">
+        Belum ada dokumen. Upload dokumen pertama di atas.
       </p>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule bg-surface">
+    <div className="glass overflow-x-auto rounded-[28px]">
       <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="border-b border-rule bg-paper text-xs text-muted">
+        <thead className="border-b border-rule text-xs text-muted">
           <tr>
             <th className="px-5 py-2.5 font-semibold">Dokumen</th>
             <th className="px-5 py-2.5 font-semibold">Jenis</th>

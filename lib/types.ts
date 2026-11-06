@@ -27,7 +27,11 @@ export interface Source {
 export interface ChatSession {
   id: string;
   title: string;
+  // kosong = semua dokumen
+  document_ids?: string[];
   created_at: string;
+  // waktu pesan terakhir; riwayat diurutkan dari sini
+  last_message_at: string;
 }
 
 export interface ChatMessage {
@@ -36,6 +40,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  model?: string;
   created_at: string;
 }
 
@@ -44,4 +49,5 @@ export interface AskResponse {
   search_query: string;
   answer: string;
   sources: Source[];
+  model?: string;
 }

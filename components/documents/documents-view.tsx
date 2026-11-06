@@ -48,11 +48,11 @@ export function DocumentsView() {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto w-full max-w-5xl space-y-8 px-4 pt-20 pb-8 md:px-6 md:pt-24 md:pb-12">
         <div>
           <h1 className="font-serif text-4xl font-semibold tracking-tight">Dokumen</h1>
           <p className="mt-2 max-w-2xl text-[15px] text-muted">
-            Regulasi dan standar yang jadi sumber jawaban chat. Dokumen baru bisa ditanyakan
+            Dokumen yang jadi sumber jawaban chat. Dokumen baru bisa ditanyakan
             setelah statusnya Siap.
           </p>
         </div>

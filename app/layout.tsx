@@ -25,7 +25,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="id"
       className={`${publicSans.variable} ${sourceSerif.variable} h-full antialiased`}
     >
-      <body className="flex h-full flex-col bg-paper font-sans text-ink">
+      {/* h-dvh: mengikuti tinggi layar HP saat address bar muncul atau hilang */}
+      <body className="flex h-dvh flex-col bg-paper font-sans text-ink">
         <Nav />
         <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       </body>
