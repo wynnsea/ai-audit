@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
 import type { AuditDocument, ChatMessage, ChatSession, Source } from "@/lib/types";
-import { ChatInput } from "./chat-input";
+import { ChatInput, type ChatInputHandle } from "./chat-input";
 import { MessageList } from "./message-list";
 import { SessionSidebar } from "./session-sidebar";
 import { SourcePanel } from "./source-panel";
@@ -25,6 +25,8 @@ export function ChatView() {
   // dokumen yang boleh dipakai menjawab; kosong = semua dokumen
   const [documentIds, setDocumentIds] = useState<string[]>([]);
   const closeHistory = useCallback(() => setHistoryOpen(false), []);
+  const input = useRef<ChatInputHandle>(null);
+  const editQuestion = useCallback((text: string) => input.current?.fill(text), []);
 
   // sesi terakhir yang diklik; respons dari klik sebelumnya yang datang belakangan diabaikan
   const latestSession = useRef<string | null>(null);
@@ -226,7 +228,12 @@ export function ChatView() {
             ) : messages.length === 0 && !pending ? (
               <EmptyState disabled={pending} onAsk={send} />
             ) : (
-              <MessageList messages={messages} pending={pending} onOpenSource={setOpenSource} />
+              <MessageList
+                messages={messages}
+                pending={pending}
+                onOpenSource={setOpenSource}
+                onEdit={editQuestion}
+              />
             )}
           </div>
         </div>
@@ -240,6 +247,7 @@ export function ChatView() {
               </p>
             )}
             <ChatInput
+              ref={input}
               disabled={pending || loadingMessages}
               models={models}
               model={model}

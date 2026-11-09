@@ -1,9 +1,15 @@
-import { useState, type KeyboardEvent } from "react";
+import { useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from "react";
 import type { AuditDocument } from "@/lib/types";
 import { DocumentSelect } from "./document-select";
 import { ModelSelect } from "./model-select";
 
+// dipanggil ChatView lewat ref, misal saat tombol edit pertanyaan diklik
+export type ChatInputHandle = {
+  fill: (text: string) => void;
+};
+
 type Props = {
+  ref?: Ref<ChatInputHandle>;
   disabled: boolean;
   models: string[];
   model: string | null;
@@ -16,6 +22,7 @@ type Props = {
 };
 
 export function ChatInput({
+  ref,
   disabled,
   models,
   model,
@@ -26,6 +33,20 @@ export function ChatInput({
   onSend,
 }: Props) {
   const [value, setValue] = useState("");
+  const textarea = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    fill(text: string) {
+      setValue(text);
+      // tunggu teks masuk dulu, baru fokus dan taruh kursor di akhir
+      requestAnimationFrame(() => {
+        const el = textarea.current;
+        if (!el) return;
+        el.focus();
+        el.setSelectionRange(text.length, text.length);
+      });
+    },
+  }));
 
   async function submit() {
     const question = value.trim();
@@ -56,6 +77,7 @@ export function ChatInput({
         </label>
         {/* field-sizing-content: kotak ikut tinggi teks sampai max-h, lalu digulir */}
         <textarea
+          ref={textarea}
           id="question"
           value={value}
           onChange={(e) => setValue(e.target.value)}

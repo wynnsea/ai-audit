@@ -8,6 +8,8 @@ export interface AuditDocument {
   title: string;
   file_name: string;
   regulation_type?: string;
+  // model yang membaca halaman scan/gambar; kosong = tidak memakai OCR
+  ocr_model?: string;
   status: DocumentStatus;
   error_message?: string;
   created_at: string;

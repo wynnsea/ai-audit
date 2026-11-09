@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { modelLabel } from "@/lib/format";
 import type { ChatMessage, Source } from "@/lib/types";
+import { CopyButton, EditButton } from "./message-actions";
 
 // "[3]" di jawaban diubah jadi link Markdown "[3](#cite-3)" supaya bisa dirender sebagai tombol.
 // (?!\() mencegah link Markdown asli "[teks](url)" ikut berubah.
@@ -27,14 +28,22 @@ export function shortSection(section: string) {
 type Props = {
   message: ChatMessage;
   onOpenSource: (source: Source) => void;
+  // memasukkan teks pertanyaan ke kotak input supaya bisa diubah lalu dikirim ulang
+  onEdit: (text: string) => void;
+  editDisabled: boolean;
 };
 
-export function MessageBubble({ message, onOpenSource }: Props) {
+export function MessageBubble({ message, onOpenSource, onEdit, editDisabled }: Props) {
   if (message.role === "user") {
     return (
-      <div className="flex justify-end">
+      <div className="group flex flex-col items-end">
         <div className="max-w-[85%] rounded-[22px] rounded-br-md bg-ledger px-4 py-2.5 text-[15px] whitespace-pre-wrap text-paper">
           {message.content}
+        </div>
+        {/* di layar sentuh tidak ada hover, jadi tombol selalu terlihat; di desktop muncul saat hover atau fokus */}
+        <div className="mt-1 flex gap-0.5 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+          <EditButton onClick={() => onEdit(message.content)} disabled={editDisabled} />
+          <CopyButton text={message.content} label="Salin pertanyaan" />
         </div>
       </div>
     );
@@ -85,9 +94,10 @@ export function MessageBubble({ message, onOpenSource }: Props) {
         </ReactMarkdown>
       </div>
 
-      {message.model && (
-        <p className="text-xs text-muted">Dijawab oleh {modelLabel(message.model)}</p>
-      )}
+      <div className="-my-2 flex items-center gap-2">
+        <CopyButton text={message.content} label="Salin jawaban" />
+        {message.model && <p className="text-xs text-muted">Dijawab oleh {modelLabel(message.model)}</p>}
+      </div>
 
       {listed.length > 0 && (
         // tanpa blur: bisa ada banyak pesan, dan blur di tiap pesan membuat scroll berat

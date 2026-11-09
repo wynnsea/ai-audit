@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { documentFileUrl } from "@/lib/api";
 import type { Source } from "@/lib/types";
 import { shortSection } from "./message-bubble";
 
@@ -63,9 +64,18 @@ export function SourcePanel({ source, onClose }: Props) {
           </blockquote>
         </div>
 
-        <footer className="flex gap-6 border-t border-rule px-5 py-3 text-sm text-muted md:px-6">
+        <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-rule px-5 py-3 text-sm text-muted md:px-6">
           {source.page ? <span>Halaman {source.page}</span> : null}
           <span>Kecocokan {Math.round(source.score * 100)}%</span>
+          {/* teks kutipan sudah kehilangan tabel, gambar, dan tata letak; auditor perlu bisa cek ke aslinya */}
+          <a
+            href={documentFileUrl(source.document_id, source.page)}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-auto font-medium text-ledger underline-offset-2 hover:underline"
+          >
+            {source.page ? "Buka halaman asli" : "Buka dokumen asli"} ↗
+          </a>
         </footer>
       </aside>
     </div>

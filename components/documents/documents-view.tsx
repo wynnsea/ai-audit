@@ -18,6 +18,18 @@ export function DocumentsView() {
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
+  const deleteDocument = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      await api.deleteDocument(id);
+      setDocuments((docs) => docs.filter((d) => d.id !== id));
+      setError(null);
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menghapus dokumen");
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     // ignore: kalau effect sudah diganti request baru, hasil request lama dibuang
     let ignore = false;
@@ -70,7 +82,7 @@ export function DocumentsView() {
             </p>
           )}
 
-          {!loading && <DocumentTable documents={documents} />}
+          {!loading && <DocumentTable documents={documents} onDelete={deleteDocument} />}
         </section>
       </div>
     </div>

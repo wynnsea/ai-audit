@@ -21,11 +21,22 @@ export function errorMessage(e: unknown, fallback: string) {
   return e instanceof Error ? e.message : fallback;
 }
 
+// file asli dokumen; #page membuat penampil PDF browser langsung membuka halaman itu
+export function documentFileUrl(documentId: string, page?: number) {
+  return `/api/documents/${documentId}/file${page ? `#page=${page}` : ""}`;
+}
+
 export const api = {
   listDocuments: () => request<AuditDocument[]>("/documents"),
 
+  // chunk dan file aslinya ikut terhapus
+  deleteDocument: (id: string) => request<null>(`/documents/${id}`, { method: "DELETE" }),
+
   uploadDocument: (form: FormData) =>
     request<AuditDocument>("/documents", { method: "POST", body: form }),
+
+  // urutan pertama = model default
+  listOcrModels: () => request<string[]>("/documents/ocr-models"),
 
   listSessions: () => request<ChatSession[]>("/chat/sessions"),
 

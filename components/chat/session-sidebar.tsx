@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { formatDateTime } from "@/lib/format";
 import type { ChatSession } from "@/lib/types";
+import { ConfirmDialog } from "../confirm-dialog";
 
 type Props = {
   sessions: ChatSession[];
@@ -81,7 +82,6 @@ export function SessionSidebar({
               disabled={disabled}
               menuOpen={menuId === s.id}
               renaming={renamingId === s.id}
-              confirming={confirmId === s.id}
               onSelect={() => onSelect(s.id)}
               onToggleMenu={() => {
                 setConfirmId(null);
@@ -97,13 +97,29 @@ export function SessionSidebar({
                 setMenuId(null);
                 setConfirmId(s.id);
               }}
-              onCancelDelete={() => setConfirmId(null)}
               onRename={(title) => onRename(s.id, title)}
-              onDelete={() => onDelete(s.id)}
             />
           ))}
         </nav>
       </aside>
+
+      {/* di luar aside: di HP aside disembunyikan saat laci tertutup, dan dialog di dalamnya ikut tidak tampil */}
+      <ConfirmDialog
+        open={confirmId !== null}
+        title="Hapus chat?"
+        description={
+          <>
+            <span className="font-medium text-ink">
+              {sessions.find((s) => s.id === confirmId)?.title || "Tanpa judul"}
+            </span>{" "}
+            beserta semua pesannya akan dihapus permanen.
+          </>
+        }
+        confirmLabel="Hapus"
+        busyLabel="Menghapus…"
+        onConfirm={() => (confirmId ? onDelete(confirmId) : Promise.resolve(false))}
+        onClose={() => setConfirmId(null)}
+      />
     </>
   );
 }
@@ -114,16 +130,13 @@ type ItemProps = {
   disabled: boolean;
   menuOpen: boolean;
   renaming: boolean;
-  confirming: boolean;
   onSelect: () => void;
   onToggleMenu: () => void;
   onCloseMenu: () => void;
   onStartRename: () => void;
   onEndRename: () => void;
   onStartDelete: () => void;
-  onCancelDelete: () => void;
   onRename: (title: string) => Promise<boolean>;
-  onDelete: () => Promise<boolean>;
 };
 
 function SessionItem({
@@ -132,20 +145,16 @@ function SessionItem({
   disabled,
   menuOpen,
   renaming,
-  confirming,
   onSelect,
   onToggleMenu,
   onCloseMenu,
   onStartRename,
   onEndRename,
   onStartDelete,
-  onCancelDelete,
   onRename,
-  onDelete,
 }: ItemProps) {
   const root = useRef<HTMLDivElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const [busy, setBusy] = useState(false);
   const title = session.title || "Tanpa judul";
 
   useEffect(() => {
@@ -169,40 +178,6 @@ function SessionItem({
 
   if (renaming) {
     return <RenameField initial={session.title} onSave={onRename} onDone={onEndRename} />;
-  }
-
-  if (confirming) {
-    return (
-      <div className="mb-0.5 rounded-2xl bg-danger-soft px-3 py-2.5" role="group" aria-label={`Hapus ${title}`}>
-        <p className="text-sm font-medium text-danger">Hapus chat ini?</p>
-        <p className="mt-0.5 truncate text-xs text-muted">{title}</p>
-        <div className="mt-2 flex gap-2">
-          <button
-            type="button"
-            autoFocus
-            disabled={busy || disabled}
-            onClick={async () => {
-              setBusy(true);
-              const ok = await onDelete();
-              // kalau berhasil, item ini hilang dari daftar, jadi state tidak perlu dikembalikan
-              if (!ok) setBusy(false);
-            }}
-            className="rounded-full bg-danger px-3 py-1 text-xs font-semibold text-surface transition-opacity hover:opacity-85 disabled:opacity-50"
-          >
-            {busy ? "Menghapus…" : "Hapus"}
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={onCancelDelete}
-            onKeyDown={(e) => e.key === "Escape" && onCancelDelete()}
-            className="rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-surface disabled:opacity-50"
-          >
-            Batal
-          </button>
-        </div>
-      </div>
-    );
   }
 
   return (

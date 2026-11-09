@@ -6,9 +6,10 @@ type Props = {
   messages: ChatMessage[];
   pending: boolean;
   onOpenSource: (source: Source) => void;
+  onEdit: (text: string) => void;
 };
 
-export function MessageList({ messages, pending, onOpenSource }: Props) {
+export function MessageList({ messages, pending, onOpenSource, onEdit }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   // komponen ini dipasang ulang setiap membuka sesi, jadi false berarti percakapan baru dibuka
   const opened = useRef(false);
@@ -23,7 +24,13 @@ export function MessageList({ messages, pending, onOpenSource }: Props) {
   return (
     <div className="space-y-8">
       {messages.map((m) => (
-        <MessageBubble key={m.id} message={m} onOpenSource={onOpenSource} />
+        <MessageBubble
+          key={m.id}
+          message={m}
+          onOpenSource={onOpenSource}
+          onEdit={onEdit}
+          editDisabled={pending}
+        />
       ))}
       {pending && (
         <div className="flex items-center gap-3 text-sm text-muted" role="status">
