@@ -1,4 +1,4 @@
-// tanda centang ala tick mark auditor, dipakai di logo dan penanda sitasi
+// tanda centang, dipakai sebagai penanda pilihan dan status Siap
 export function TickMark({ className }: { className?: string }) {
   return (
     <svg

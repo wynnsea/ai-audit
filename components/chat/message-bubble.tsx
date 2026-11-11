@@ -37,7 +37,7 @@ export function MessageBubble({ message, onOpenSource, onEdit, editDisabled }: P
   if (message.role === "user") {
     return (
       <div className="group flex flex-col items-end">
-        <div className="max-w-[85%] rounded-[22px] rounded-br-md bg-ledger px-4 py-2.5 text-[15px] whitespace-pre-wrap text-paper">
+        <div className="max-w-[85%] rounded-xl rounded-br-sm border-[2.5px] border-ink bg-violet px-4 py-2.5 text-[15px] font-medium whitespace-pre-wrap text-ink shadow-[3px_3px_0_0_#000]">
           {message.content}
         </div>
         {/* di layar sentuh tidak ada hover, jadi tombol selalu terlihat; di desktop muncul saat hover atau fokus */}
@@ -55,7 +55,7 @@ export function MessageBubble({ message, onOpenSource, onEdit, editDisabled }: P
   return (
     <article className="space-y-4">
       {/* Markdown di-style manual karena belum pakai plugin typography Tailwind */}
-      <div className="font-serif text-[17px] leading-[1.7] wrap-break-word [&_li]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_p:first-child]:mt-0 [&_strong]:font-semibold [&_table]:my-3 [&_table]:w-full [&_table]:font-sans [&_table]:text-sm [&_td]:border [&_td]:border-rule [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-rule [&_th]:bg-paper [&_th]:px-2 [&_th]:py-1 [&_ul]:list-disc [&_ul]:pl-6">
+      <div className="text-base leading-[1.75] wrap-break-word [&_li]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_p:first-child]:mt-0 [&_strong]:font-bold [&_table]:my-3 [&_table]:w-full [&_table]:font-sans [&_table]:text-sm [&_td]:border-2 [&_td]:border-ink [&_td]:px-2 [&_td]:py-1 [&_th]:border-2 [&_th]:border-ink [&_th]:bg-lime [&_th]:px-2 [&_th]:py-1 [&_ul]:list-disc [&_ul]:pl-6">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -76,7 +76,7 @@ export function MessageBubble({ message, onOpenSource, onEdit, editDisabled }: P
                     onClick={() => onOpenSource(source)}
                     title={`${source.document_title}, ${shortSection(source.section)}`}
                     aria-label={`Buka sumber ${source.number}: ${shortSection(source.section)}`}
-                    className="mx-0.5 inline-flex -translate-y-1 items-center rounded-full bg-highlight px-1.5 font-sans text-xs font-bold text-ink transition-opacity hover:opacity-70"
+                    className="mx-0.5 inline-flex -translate-y-0.5 items-center rounded-md border-2 border-ink bg-lime px-1.5 text-xs leading-4 font-extrabold text-ink transition-transform hover:-translate-y-1"
                   >
                     {source.number}
                   </button>
@@ -101,8 +101,8 @@ export function MessageBubble({ message, onOpenSource, onEdit, editDisabled }: P
 
       {listed.length > 0 && (
         // tanpa blur: bisa ada banyak pesan, dan blur di tiap pesan membuat scroll berat
-        <section className="overflow-hidden rounded-[22px] border border-rule bg-surface/60">
-          <h3 className="border-b border-rule px-4 py-2 text-xs font-semibold text-muted">
+        <section className="mt-5 overflow-hidden rounded-xl border-[2.5px] border-ink bg-surface shadow-[4px_4px_0_0_#000]">
+          <h3 className="border-b-[2.5px] border-ink bg-lime px-4 py-2 text-xs font-bold">
             Dasar jawaban ({listed.length} sumber)
           </h3>
           <ol className="divide-y divide-rule">

@@ -1,16 +1,16 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import type { AuditDocument } from "@/lib/types";
+import type { StoredDocument } from "@/lib/types";
 import { TickMark } from "../tick-mark";
 
 type Props = {
-  documents: AuditDocument[];
+  documents: StoredDocument[];
   // kosong = semua dokumen
   selected: string[];
   disabled: boolean;
   onChange: (ids: string[]) => void;
 };
 
-function buttonLabel(documents: AuditDocument[], selected: string[]) {
+function buttonLabel(documents: StoredDocument[], selected: string[]) {
   if (selected.length === 0) return "Semua dokumen";
   if (selected.length > 1) return `${selected.length} dokumen`;
   return documents.find((d) => d.id === selected[0])?.title ?? "1 dokumen";
@@ -126,7 +126,7 @@ export function DocumentSelect({ documents, selected, disabled, onChange }: Prop
           role="listbox"
           aria-label="Dokumen sumber jawaban"
           aria-multiselectable="true"
-          className="no-scrollbar absolute bottom-full left-0 z-50 mb-2 max-h-72 w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-[20px] border border-rule bg-surface p-1.5 shadow-xl"
+          className="no-scrollbar absolute bottom-full left-0 z-50 mb-2 max-h-72 w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border-[2.5px] border-ink bg-surface p-1.5 shadow-xl"
         >
           <li
             id={optionId(0)}

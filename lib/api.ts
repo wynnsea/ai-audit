@@ -1,6 +1,6 @@
 import type {
   AskResponse,
-  AuditDocument,
+  StoredDocument,
   ChatMessage,
   ChatSession,
 } from "./types";
@@ -27,13 +27,13 @@ export function documentFileUrl(documentId: string, page?: number) {
 }
 
 export const api = {
-  listDocuments: () => request<AuditDocument[]>("/documents"),
+  listDocuments: () => request<StoredDocument[]>("/documents"),
 
   // chunk dan file aslinya ikut terhapus
   deleteDocument: (id: string) => request<null>(`/documents/${id}`, { method: "DELETE" }),
 
   uploadDocument: (form: FormData) =>
-    request<AuditDocument>("/documents", { method: "POST", body: form }),
+    request<StoredDocument>("/documents", { method: "POST", body: form }),
 
   // urutan pertama = model default
   listOcrModels: () => request<string[]>("/documents/ocr-models"),

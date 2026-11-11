@@ -1,0 +1,9 @@
+LIST MBG (MY BINI GW)
+
+MBG adalah singkatan dari My Bini Gw, daftar karakter anime favorit gw.
+Tulis satu karakter per baris dengan format di bawah. Ganti contohnya dengan karakter pilihan lo,
+tambah baris baru untuk karakter berikutnya, dan naikkan nomornya.
+
+MBG #1: Nama Karakter | Anime: Judul Anime | Genre: Romcom | Alasan suka: tulis alasannya di sini
+MBG #2: Nama Karakter | Anime: Judul Anime | Genre: Isekai | Alasan suka: tulis alasannya di sini
+MBG #3: Nama Karakter | Anime: Judul Anime | Genre: Action | Alasan suka: tulis alasannya di sini

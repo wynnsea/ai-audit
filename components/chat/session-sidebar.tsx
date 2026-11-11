@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { formatDateTime } from "@/lib/format";
 import type { ChatSession } from "@/lib/types";
+import { AppDrawer } from "../app-drawer";
 import { ConfirmDialog } from "../confirm-dialog";
 
 type Props = {
   sessions: ChatSession[];
   activeId: string | null;
   disabled: boolean;
-  // di layar kecil sidebar berupa laci yang dibuka lewat tombol Riwayat
+  // di layar kecil sidebar berupa laci yang dibuka lewat tombol menu
   mobileOpen: boolean;
   onCloseMobile: () => void;
   onSelect: (id: string) => void;
@@ -33,46 +34,26 @@ export function SessionSidebar({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      // Escape menutup menu dulu; laci baru tertutup kalau tidak ada menu yang terbuka
-      if (e.key === "Escape" && menuId === null && confirmId === null && renamingId === null) {
-        onCloseMobile();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [mobileOpen, onCloseMobile, menuId, confirmId, renamingId]);
-
   return (
     <>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={onCloseMobile} aria-hidden="true" />
-      )}
-
-      {/* md:mt-19: di layar besar mulai di bawah nav yang mengambang */}
-      <aside
-        className={`glass-thick fixed inset-y-3 left-3 z-40 w-[min(18rem,calc(100vw-1.5rem))] flex-col rounded-[28px] md:static md:z-auto md:mt-19 md:mb-4 md:ml-4 md:flex md:w-72 md:shrink-0 ${
-          mobileOpen ? "flex" : "hidden"
-        }`}
+      {/* Esc menutup menu sesi atau mode rename dulu; laci baru tertutup kalau tidak ada yang terbuka */}
+      <AppDrawer
+        open={mobileOpen}
+        onClose={onCloseMobile}
+        onNewChat={onNew}
+        newChatDisabled={disabled}
+        closeOnEscape={
+          menuId === null && confirmId === null && renamingId === null
+        }
       >
-        <div className="p-3">
-          <button
-            type="button"
-            onClick={onNew}
-            disabled={disabled}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-ledger px-3 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
-          >
-            <span aria-hidden="true" className="text-base leading-none">+</span>
-            Chat baru
-          </button>
-        </div>
-
-        <h2 className="px-5 pb-2 text-xs font-semibold text-muted">Riwayat</h2>
+        <h2 className="px-5 pt-3 pb-2 text-xs font-semibold text-muted">
+          Riwayat
+        </h2>
         <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-4">
           {sessions.length === 0 && (
-            <p className="px-3 text-sm text-muted">Pertanyaan yang kamu kirim akan tersimpan di sini.</p>
+            <p className="px-3 text-sm text-muted">
+              Pertanyaan yang kamu kirim akan tersimpan di sini.
+            </p>
           )}
           {sessions.map((s) => (
             <SessionItem
@@ -101,7 +82,7 @@ export function SessionSidebar({
             />
           ))}
         </nav>
-      </aside>
+      </AppDrawer>
 
       {/* di luar aside: di HP aside disembunyikan saat laci tertutup, dan dialog di dalamnya ikut tidak tampil */}
       <ConfirmDialog
@@ -117,7 +98,9 @@ export function SessionSidebar({
         }
         confirmLabel="Hapus"
         busyLabel="Menghapus…"
-        onConfirm={() => (confirmId ? onDelete(confirmId) : Promise.resolve(false))}
+        onConfirm={() =>
+          confirmId ? onDelete(confirmId) : Promise.resolve(false)
+        }
         onClose={() => setConfirmId(null)}
       />
     </>
@@ -177,14 +160,22 @@ function SessionItem({
   }, [menuOpen, onCloseMenu]);
 
   if (renaming) {
-    return <RenameField initial={session.title} onSave={onRename} onDone={onEndRename} />;
+    return (
+      <RenameField
+        initial={session.title}
+        onSave={onRename}
+        onDone={onEndRename}
+      />
+    );
   }
 
   return (
     <div
       ref={root}
-      className={`group relative mb-0.5 rounded-2xl transition-colors ${
-        active || menuOpen ? "bg-ledger-soft" : "hover:bg-ledger-soft"
+      className={`group relative mb-1 rounded-xl border-2 transition-colors ${
+        active || menuOpen
+          ? "border-ink bg-peach"
+          : "border-transparent hover:border-ink"
       }`}
     >
       <button
@@ -209,11 +200,16 @@ function SessionItem({
         aria-expanded={menuOpen}
         disabled={disabled}
         onClick={onToggleMenu}
-        className={`absolute top-1/2 right-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-full text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:opacity-100 disabled:opacity-0 md:opacity-0 md:group-hover:opacity-100 ${
+        className={`absolute top-1/2 right-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-xl text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:opacity-100 disabled:opacity-0 md:opacity-0 md:group-hover:opacity-100 ${
           menuOpen || active ? "md:opacity-100" : ""
         }`}
       >
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="size-4">
+        <svg
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          aria-hidden="true"
+          className="size-4"
+        >
           <circle cx="3" cy="8" r="1.4" />
           <circle cx="8" cy="8" r="1.4" />
           <circle cx="13" cy="8" r="1.4" />
@@ -224,7 +220,7 @@ function SessionItem({
         <div
           role="menu"
           aria-label={`Opsi untuk ${title}`}
-          className="absolute top-full right-1 z-50 mt-1 w-36 rounded-[18px] border border-rule bg-surface p-1.5 shadow-xl"
+          className="absolute top-full right-1 z-50 mt-1 w-36 rounded-xl border-[2.5px] border-ink bg-surface p-1.5 shadow-xl"
         >
           <button
             type="button"
@@ -315,9 +311,11 @@ function RenameField({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={onKeyDown}
         onBlur={save}
-        className="w-full rounded-xl border border-rule bg-surface px-2 py-1.5 text-base outline-none focus:border-ledger disabled:opacity-60 md:text-sm"
+        className="w-full rounded-xl border-[2.5px] border-ink bg-surface px-2 py-1.5 text-base outline-none focus:border-ledger disabled:opacity-60 md:text-sm"
       />
-      <p className="mt-1 px-1 text-[11px] text-muted">Enter simpan · Esc batal</p>
+      <p className="mt-1 px-1 text-[11px] text-muted">
+        Enter simpan · Esc batal
+      </p>
     </div>
   );
 }

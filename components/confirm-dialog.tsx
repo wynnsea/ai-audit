@@ -48,12 +48,12 @@ export function ConfirmDialog({ open, title, description, confirmLabel, busyLabe
       onClick={(e) => {
         if (e.target === e.currentTarget && !busy) onClose();
       }}
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-[28px] border border-rule bg-surface p-6 text-ink shadow-xl backdrop:bg-black/40"
+      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border-[2.5px] border-ink bg-surface p-6 text-ink shadow-xl backdrop:bg-black/40"
     >
-      <h2 id="confirm-title" className="font-serif text-xl font-semibold tracking-tight">
+      <h2 id="confirm-title" className="text-xl font-extrabold tracking-tight">
         {title}
       </h2>
-      <div className="mt-2 text-sm leading-relaxed text-muted">{description}</div>
+      <div className="mt-2 text-sm leading-relaxed text-ink">{description}</div>
       <div className="mt-6 flex justify-end gap-2">
         {/* fokus awal di Batal: Enter yang tidak sengaja tidak langsung menghapus */}
         <button
@@ -61,7 +61,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, busyLabe
           autoFocus
           disabled={busy}
           onClick={onClose}
-          className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-ledger-soft disabled:opacity-50"
+          className="neo-btn rounded-xl bg-surface px-4 py-2 text-sm font-bold disabled:opacity-50"
         >
           Batal
         </button>
@@ -69,7 +69,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, busyLabe
           type="button"
           disabled={busy}
           onClick={confirm}
-          className="rounded-full bg-danger px-4 py-2 text-sm font-semibold text-surface transition-opacity hover:opacity-85 disabled:opacity-50"
+          className="neo-btn rounded-xl bg-danger px-4 py-2 text-sm font-bold text-surface disabled:opacity-50"
         >
           {busy ? busyLabel : confirmLabel}
         </button>

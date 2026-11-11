@@ -3,7 +3,7 @@
 export type DocumentStatus = "processing" | "ready" | "failed";
 
 // bukan "Document" supaya tidak bentrok dengan tipe Document bawaan DOM
-export interface AuditDocument {
+export interface StoredDocument {
   id: string;
   title: string;
   file_name: string;

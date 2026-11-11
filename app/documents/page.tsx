@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DocumentsView } from "@/components/documents/documents-view";
 
 export const metadata: Metadata = {
-  title: "Dokumen | AI Audit Assistant",
+  title: "Dokumen | List MBG",
 };
 
 export default function DocumentsPage() {

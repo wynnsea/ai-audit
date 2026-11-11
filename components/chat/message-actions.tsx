@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { copyText } from "@/lib/clipboard";
 import { TickMark } from "../tick-mark";
 
+// relative: teks sr-only di dalam tombol berposisi absolute; tanpa ini teks itu lepas dari area
+// chat yang digulir dan ikut memanjangkan seluruh halaman
 const buttonClass =
-  "grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-ledger-soft hover:text-ink";
+  "relative grid size-8 place-items-center rounded-lg text-muted transition-colors hover:bg-ledger-soft hover:text-ink";
 
 export function CopyButton({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);

@@ -149,14 +149,14 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
         e.preventDefault();
         submit();
       }}
-      className="glass rounded-[28px] p-5">
+      className="glass rounded-2xl p-5">
       {/* input file dibuat transparan menutupi area ini, jadi klik & drag-drop ditangani browser */}
       <label
         onDragEnter={() => setDragging(true)}
         onDragLeave={() => setDragging(false)}
         onDrop={() => setDragging(false)}
-        className={`relative flex flex-col items-center justify-center rounded-[20px] border-2 border-dashed px-4 py-8 text-center transition-colors ${
-          dragging ? "border-ledger bg-ledger-soft" : "border-rule hover:border-ledger"
+        className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
+          dragging ? "border-ink bg-lime" : "border-ink hover:bg-ledger-soft"
         } ${uploading ? "pointer-events-none opacity-60" : ""}`}
       >
         <input
@@ -184,8 +184,21 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
         )}
       </label>
 
+      {/* di luar label: input file menutupi seluruh area label, jadi link di dalamnya tidak bisa diklik */}
+      <p className="mt-2 text-sm text-muted">
+        Belum punya list?{" "}
+        <a
+          href="/template-list-mbg.txt"
+          download
+          className="font-semibold text-ink underline decoration-2 underline-offset-2 hover:bg-lime"
+        >
+          Download template list MBG
+        </a>
+        , isi karakter favoritmu, lalu upload di sini.
+      </p>
+
       {queue.length > 0 && (
-        <ul className="no-scrollbar mt-3 max-h-64 divide-y divide-rule overflow-y-auto rounded-[20px] border border-rule bg-surface/60 text-sm">
+        <ul className="no-scrollbar mt-3 max-h-64 divide-y divide-rule overflow-y-auto rounded-xl border-[2.5px] border-ink bg-surface text-sm">
           {queue.map((f) => (
             <li key={f.key} className="flex items-baseline justify-between gap-3 px-4 py-2">
               <span className="min-w-0 truncate" title={f.file.name}>
@@ -216,9 +229,9 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
             onChange={(e) => setTitle(e.target.value)}
             disabled={uploading || queue.length > 1}
             placeholder={
-              queue.length > 1 ? "Memakai nama masing-masing file" : "Contoh: Kebijakan Keamanan Informasi 2026"
+              queue.length > 1 ? "Memakai nama masing-masing file" : "Contoh: List MBG 2026"
             }
-            className="w-full min-w-0 rounded-full border border-rule bg-surface/60 px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none disabled:opacity-60"
+            className="w-full min-w-0 rounded-xl border-[2.5px] border-ink bg-surface px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none disabled:opacity-60"
           />
         </label>
         <label className="grid gap-1.5 text-sm">
@@ -228,15 +241,15 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
             value={docType}
             onChange={(e) => setDocType(e.target.value)}
             disabled={uploading}
-            placeholder="Contoh: Regulasi, SOP, CV"
-            className="w-full min-w-0 rounded-full border border-rule bg-surface/60 px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none disabled:opacity-60"
+            placeholder="Contoh: MBG, Anime"
+            className="w-full min-w-0 rounded-xl border-[2.5px] border-ink bg-surface px-4 py-2 placeholder:text-muted focus:border-ledger focus:outline-none disabled:opacity-60"
           />
         </label>
         {finished ? (
           <button
             type="button"
             onClick={clear}
-            className="h-10 rounded-full border border-rule px-5 text-sm font-semibold transition-colors hover:bg-ledger-soft"
+            className="h-10 rounded-xl border-[2.5px] border-ink px-5 text-sm font-semibold transition-colors hover:bg-ledger-soft"
           >
             Upload lagi
           </button>
@@ -244,7 +257,7 @@ export function UploadForm({ onUploaded }: { onUploaded: () => void }) {
           <button
             type="submit"
             disabled={uploading || waiting === 0}
-            className="h-10 rounded-full bg-ledger px-5 text-sm font-semibold text-surface transition-colors hover:bg-ledger-strong disabled:opacity-50"
+            className="neo-btn h-10 rounded-xl bg-sky px-5 text-sm font-bold text-ink disabled:opacity-50"
           >
             {uploading
               ? `Mengupload ${progress.current}/${progress.total}…`

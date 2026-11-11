@@ -1,33 +1,25 @@
 import type { Metadata } from "next";
-import { Public_Sans, Source_Serif_4 } from "next/font/google";
-import { Nav } from "@/components/nav";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-// Public Sans untuk UI, Source Serif untuk jawaban & kutipan supaya terbaca seperti naskah regulasi
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
-  subsets: ["latin"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
+// Plus Jakarta Sans: huruf geometris tebal karya Tokotype (Jakarta), dipakai untuk seluruh UI dan jawaban
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "AI Audit Assistant",
-  description: "Tanya jawab dokumen regulasi dan standar dengan sitasi pasal",
+  title: "List MBG",
+  description: "Chat soal MBG (My Bini Gw), daftar karakter anime favorit, lengkap dengan sumbernya",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="id"
-      className={`${publicSans.variable} ${sourceSerif.variable} h-full antialiased`}
-    >
-      {/* h-dvh: mengikuti tinggi layar HP saat address bar muncul atau hilang */}
-      <body className="flex h-dvh flex-col bg-paper font-sans text-ink">
-        <Nav />
+    <html lang="id" className={`${jakarta.variable} h-full antialiased`}>
+      {/* h-dvh: mengikuti tinggi layar HP saat address bar muncul atau hilang.
+          overflow-hidden: halaman sendiri tidak pernah digulir; yang digulir area di dalamnya
+          (daftar chat, halaman dokumen), supaya laci dan tombol menu tidak ikut terdorong keluar layar */}
+      <body className="flex h-dvh flex-col overflow-hidden bg-paper font-sans text-ink">
         <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       </body>
     </html>

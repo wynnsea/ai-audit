@@ -1,5 +1,5 @@
 import { useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from "react";
-import type { AuditDocument } from "@/lib/types";
+import type { StoredDocument } from "@/lib/types";
 import { DocumentSelect } from "./document-select";
 import { ModelSelect } from "./model-select";
 
@@ -14,7 +14,7 @@ type Props = {
   models: string[];
   model: string | null;
   onModelChange: (model: string) => void;
-  documents: AuditDocument[];
+  documents: StoredDocument[];
   documentIds: string[];
   onDocumentsChange: (ids: string[]) => void;
   // true kalau terkirim; false kalau gagal, maka teks dikembalikan ke kotak input
@@ -83,14 +83,14 @@ export function ChatInput({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
           rows={1}
-          placeholder="Tanyakan isi dokumen…"
+          placeholder="Tanya soal MBG lo…"
           className="no-scrollbar field-sizing-content max-h-40 min-h-10 min-w-0 flex-1 resize-none bg-transparent px-3 py-2 text-base placeholder:text-muted focus:outline-none md:text-[15px]"
         />
         <button
           type="submit"
           aria-label="Kirim"
           disabled={disabled || value.trim() === ""}
-          className="grid size-10 shrink-0 place-items-center rounded-xl text-ink transition-colors hover:bg-ledger-soft disabled:text-muted disabled:hover:bg-transparent">
+          className="neo-btn grid size-10 shrink-0 place-items-center rounded-lg bg-sky text-ink disabled:border-transparent disabled:bg-transparent disabled:text-muted">
           <svg
             viewBox="0 0 16 16"
             fill="none"

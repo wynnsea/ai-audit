@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
-import type { AuditDocument, ChatMessage, ChatSession, Source } from "@/lib/types";
+import type {
+  StoredDocument,
+  ChatMessage,
+  ChatSession,
+  Source,
+} from "@/lib/types";
+import { DrawerButton } from "../app-drawer";
 import { ChatInput, type ChatInputHandle } from "./chat-input";
 import { MessageList } from "./message-list";
 import { SessionSidebar } from "./session-sidebar";
@@ -21,12 +27,15 @@ export function ChatView() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [models, setModels] = useState<string[]>([]);
   const [model, setModel] = useState<string | null>(null);
-  const [documents, setDocuments] = useState<AuditDocument[]>([]);
+  const [documents, setDocuments] = useState<StoredDocument[]>([]);
   // dokumen yang boleh dipakai menjawab; kosong = semua dokumen
   const [documentIds, setDocumentIds] = useState<string[]>([]);
   const closeHistory = useCallback(() => setHistoryOpen(false), []);
   const input = useRef<ChatInputHandle>(null);
-  const editQuestion = useCallback((text: string) => input.current?.fill(text), []);
+  const editQuestion = useCallback(
+    (text: string) => input.current?.fill(text),
+    [],
+  );
 
   // sesi terakhir yang diklik; respons dari klik sebelumnya yang datang belakangan diabaikan
   const latestSession = useRef<string | null>(null);
@@ -78,23 +87,27 @@ export function ChatView() {
     };
   }, []);
 
-  const selectSession = useCallback(async (id: string) => {
-    latestSession.current = id;
-    setActiveId(id);
-    // pilihan dokumen ikut kembali, supaya pertanyaan lanjutan tidak melebar ke dokumen lain
-    setDocumentIds(sessions.find((s) => s.id === id)?.document_ids ?? []);
-    setOpenSource(null);
-    setError(null);
-    setLoadingMessages(true);
-    try {
-      const history = await api.listMessages(id);
-      if (latestSession.current === id) setMessages(history);
-    } catch (e) {
-      if (latestSession.current === id) setError(errorMessage(e, "Gagal memuat riwayat chat"));
-    } finally {
-      if (latestSession.current === id) setLoadingMessages(false);
-    }
-  }, [sessions]);
+  const selectSession = useCallback(
+    async (id: string) => {
+      latestSession.current = id;
+      setActiveId(id);
+      // pilihan dokumen ikut kembali, supaya pertanyaan lanjutan tidak melebar ke dokumen lain
+      setDocumentIds(sessions.find((s) => s.id === id)?.document_ids ?? []);
+      setOpenSource(null);
+      setError(null);
+      setLoadingMessages(true);
+      try {
+        const history = await api.listMessages(id);
+        if (latestSession.current === id) setMessages(history);
+      } catch (e) {
+        if (latestSession.current === id)
+          setError(errorMessage(e, "Gagal memuat riwayat chat"));
+      } finally {
+        if (latestSession.current === id) setLoadingMessages(false);
+      }
+    },
+    [sessions],
+  );
 
   const newChat = useCallback(() => {
     latestSession.current = null;
@@ -105,16 +118,21 @@ export function ChatView() {
     setError(null);
   }, []);
 
-  const renameSession = useCallback(async (id: string, title: string): Promise<boolean> => {
-    try {
-      const res = await api.renameSession(id, title);
-      setSessions((list) => list.map((s) => (s.id === id ? { ...s, title: res.title } : s)));
-      return true;
-    } catch (e) {
-      setError(errorMessage(e, "Gagal mengganti nama chat"));
-      return false;
-    }
-  }, []);
+  const renameSession = useCallback(
+    async (id: string, title: string): Promise<boolean> => {
+      try {
+        const res = await api.renameSession(id, title);
+        setSessions((list) =>
+          list.map((s) => (s.id === id ? { ...s, title: res.title } : s)),
+        );
+        return true;
+      } catch (e) {
+        setError(errorMessage(e, "Gagal mengganti nama chat"));
+        return false;
+      }
+    },
+    [],
+  );
 
   const deleteSession = useCallback(
     async (id: string): Promise<boolean> => {
@@ -148,7 +166,12 @@ export function ChatView() {
       setError(null);
 
       try {
-        const res = await api.ask(question, activeId ?? undefined, model ?? undefined, documentIds);
+        const res = await api.ask(
+          question,
+          activeId ?? undefined,
+          model ?? undefined,
+          documentIds,
+        );
         setMessages((m) => [
           ...m,
           {
@@ -211,15 +234,8 @@ export function ChatView() {
       />
 
       <section className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-        {/* di layar kecil riwayat dan tombol chat baru ada di dalam laci */}
-        <button
-          type="button"
-          onClick={() => setHistoryOpen(true)}
-          aria-expanded={historyOpen}
-          className="glass absolute top-3 right-3 z-20 h-12 rounded-full px-4 text-sm font-medium md:hidden"
-        >
-          Riwayat
-        </button>
+        {/* di layar kecil menu, tombol chat baru, dan riwayat ada di dalam laci */}
+        <DrawerButton open={historyOpen} onClick={() => setHistoryOpen(true)} />
 
         <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-3xl px-4 pt-20 pb-6 md:px-6 md:pt-10">
@@ -242,7 +258,10 @@ export function ChatView() {
         <div className="relative z-10 shrink-0">
           <div className="mx-auto w-full max-w-3xl px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:px-6">
             {error && (
-              <p role="alert" className="mb-2 rounded-2xl bg-danger-soft px-4 py-2 text-sm text-danger">
+              <p
+                role="alert"
+                className="mb-2 rounded-2xl bg-danger-soft px-4 py-2 text-sm text-danger"
+              >
                 {error}
               </p>
             )}
@@ -266,11 +285,11 @@ export function ChatView() {
   );
 }
 
-// contoh pertanyaan untuk memulai; diklik langsung dikirim
+// contoh pertanyaan untuk list MBG (My Bini Gw); diklik langsung dikirim
 const EXAMPLES = [
-  "Apa saja kewajiban utama yang harus dipenuhi?",
-  "Berapa batas waktu pelaporan yang ditetapkan?",
-  "Apa sanksi jika ketentuan dilanggar?",
+  { tag: "List", question: "Tampilin list MBG" },
+  { tag: "Genre", question: "MBG mana aja yang dari anime romcom?" },
+  { tag: "Alasan", question: "Siapa MBG #1 dan kenapa gw suka dia?" },
 ];
 
 function EmptyState({
@@ -281,27 +300,40 @@ function EmptyState({
   onAsk: (question: string) => Promise<boolean>;
 }) {
   return (
-    <div className="pt-6 md:pt-14">
-      <h1 className="max-w-xl font-serif text-4xl leading-tight font-semibold tracking-tight md:text-5xl">
-        Tanya dokumen, dapat jawaban dengan sumbernya.
+    <div className="pt-8 md:pt-14">
+      {/* satu-satunya elemen yang "berteriak": kotak lime = warna bukti, sama dengan nomor sitasi */}
+      <h1 className="max-w-2xl text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+        Mau lihat bini yang mana{" "}
+        <span className="mt-2 inline-block -rotate-2 rounded-md border-[3px] border-ink bg-lime px-3 pb-1 shadow-[5px_5px_0_0_#000]">
+          hari ini? ♡
+        </span>
       </h1>
-      <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted">
-        Jawaban hanya diambil dari dokumen yang sudah diupload. Setiap kalimat diberi nomor
-        sumber, klik nomornya untuk membaca kutipan aslinya.
+      <p className="mt-6 max-w-xl border-l-[3px] border-violet pl-4 text-base leading-relaxed text-ink">
+        <strong>MBG</strong> = My Bini Gw, daftar karakter anime favorit lo.
+        Upload list-nya di halaman Dokumen, lalu tanya apa aja soal mereka di
+        sini. Setiap jawaban disertai nomor sumber dari list lo.
       </p>
 
-      <h2 className="mt-10 text-sm font-semibold text-muted">Coba tanyakan</h2>
-      <ul className="glass mt-3 divide-y divide-rule overflow-hidden rounded-[28px]">
-        {EXAMPLES.map((q) => (
-          <li key={q}>
+      <h2 className="mt-10 text-sm font-bold">Coba tanya</h2>
+      <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+        {EXAMPLES.map(({ tag, question }) => (
+          <li key={question}>
             <button
               type="button"
               disabled={disabled}
-              onClick={() => onAsk(q)}
-              className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left font-serif text-lg transition-colors hover:bg-ledger-soft disabled:opacity-50"
+              onClick={() => onAsk(question)}
+              className="neo-btn group flex h-full w-full flex-col items-start gap-2 rounded-xl bg-surface p-4 text-left disabled:opacity-50 sm:gap-3"
             >
-              {q}
-              <span aria-hidden="true" className="font-sans text-muted group-hover:text-ledger">
+              <span className="rounded-md border-2 border-ink bg-paper px-2 py-0.5 text-xs font-bold">
+                {tag}
+              </span>
+              <span className="text-base leading-snug font-semibold">
+                {question}
+              </span>
+              <span
+                aria-hidden="true"
+                className="mt-auto hidden self-end font-sans text-muted group-hover:text-ledger sm:block"
+              >
                 ↵
               </span>
             </button>
